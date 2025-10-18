@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PrimeStream — Demo</title>
+
+  <!-- Tailwind CDN (production-friendly quick demo) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Optional: Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+    /* subtle glass effect for hero content */
+    .glass { background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); }
+    /* small animation for poster hover */
+    .poster-hover:hover img { transform: scale(1.06); }
+  </style>
+</head>
+<body class="bg-[#0b0f16] text-gray-100">
+
+  <!-- Header / Nav -->
+  <header class="sticky top-0 z-40 bg-gradient-to-b from-[#071026]/90 to-transparent backdrop-blur-sm border-b border-gray-800">
+    <div class="max-w-[1200px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <!-- logo -->
+        <a href="#" class="flex items-center gap-2 text-white no-underline">
+          <div class="w-9 h-9 bg-gradient-to-r from-sky-500 to-indigo-500 rounded flex items-center justify-center font-extrabold">PS</div>
+          <span class="text-lg font-semibold">PrimeStream</span>
+        </a>
+
+        <!-- categories (collapses into hamburger on small) -->
+        <nav class="hidden md:flex items-center gap-3 ml-6" aria-label="Primary">
+          <button class="nav-cat px-3 py-1 rounded text-sm hover:bg-slate-800" data-cat="all">Home</button>
+          <button class="nav-cat px-3 py-1 rounded text-sm hover:bg-slate-800" data-cat="movies">Movies</button>
+          <button class="nav-cat px-3 py-1 rounded text-sm hover:bg-slate-800" data-cat="series">Series</button>
+          <button class="nav-cat px-3 py-1 rounded text-sm hover:bg-slate-800" data-cat="kids">Kids</button>
+          <button class="nav-cat px-3 py-1 rounded text-sm hover:bg-slate-800" data-cat="docs">Documentaries</button>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- search -->
+        <div class="hidden sm:flex items-center bg-slate-900/60 rounded overflow-hidden">
+          <input id="searchInput" type="search" placeholder="Search titles, genres..." aria-label="Search" class="px-3 py-2 bg-transparent placeholder:text-gray-400 outline-none w-56" />
+          <button id="clearSearch" title="Clear search" class="px-3 py-2 opacity-80 hover:opacity-100">✕</button>
+        </div>
+
+        <!-- watchlist count -->
+        <button id="watchlistBtn" class="relative hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-800">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="text-sky-400"><path d="M3 3h12v2H3zM3 7h8v2H3zM3 11h12v2H3z"/></svg>
+          <span class="text-sm">My List</span>
+          <span id="watchCount" class="ml-1 inline-block text-xs bg-sky-600 text-black px-1 rounded">0</span>
+        </button>
+
+        <!-- signin -->
+        <button id="signInBtn" class="bg-sky-600 hover:bg-sky-500 text-black px-3 py-2 rounded font-semibold">Sign In</button>
+
+        <!-- mobile hamburger -->
+        <button id="mobileMenuBtn" class="md:hidden p-2 rounded hover:bg-slate-800">
+          <svg width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M3 6h14v2H3zM3 11h14v2H3z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- mobile dropdown -->
+    <div id="mobileMenu" class="hidden md:hidden border-t border-gray-800 bg-[#071026]">
+      <div class="px-4 py-3 flex flex-col gap-2">
+        <button class="text-left nav-cat py-2" data-cat="all">Home</button>
+        <button class="text-left nav-cat py-2" data-cat="movies">Movies</button>
+        <button class="text-left nav-cat py-2" data-cat="series">Series</button>
+        <button class="text-left nav-cat py-2" data-cat="kids">Kids</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Hero -->
+    <section class="relative h-[68vh] sm:h-[72vh] bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1517604931442-1b48f7a5ea3a?auto=format&fit=crop&w=1600&q=60');">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+
+      <div class="max-w-[1200px] mx-auto relative z-10 px-4 h-full flex items-end">
+        <div class="w-full sm:w-2/3 glass p-6 rounded-md">
+          <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight">Stream the latest movies and exclusive originals</h1>
+          <p class="mt-3 text-gray-200">Watch on any device. Personalized recommendations. Try the demo UI.</p>
+          <div class="mt-5 flex gap-3">
+            <button class="bg-sky-600 hover:bg-sky-500 px-4 py-2 rounded font-semibold">Watch now</button>
+            <button id="heroAdd" class="px-4 py-2 rounded border border-slate-700 hover:bg-slate-800">+ Add to My List</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Actions -->
+    <section class="max-w-[1200px] mx-auto px-4 py-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex gap-2 flex-wrap">
+          <button class="filter-btn px-3 py-1 text-sm rounded bg-slate-800 hover:bg-slate-700" data-filter="all">All</button>
+          <button class="filter-btn px-3 py-1 text-sm rounded" data-filter="action">Action</button>
+          <button class="filter-btn px-3 py-1 text-sm rounded" data-filter="drama">Drama</button>
+          <button class="filter-btn px-3 py-1 text-sm rounded" data-filter="comedy">Comedy</button>
+          <button class="filter-btn px-3 py-1 text-sm rounded" data-filter="sci-fi">Sci-Fi</button>
+          <button class="filter-btn px-3 py-1 text-sm rounded" data-filter="kids">Kids</button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <label for="sort" class="text-sm text-gray-300 hidden sm:inline-block">Sort</label>
+          <select id="sort" class="bg-slate-900/60 rounded px-2 py-1 text-sm">
+            <option value="popular">Most Popular</option>
+            <option value="new">Newest</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content grid -->
+    <section class="max-w-[1200px] mx-auto px-4 pb-12">
+      <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <!-- We'll populate cards statically here for demo. Each card has data-category and data-title for filtering/searching -->
+        <!-- Card example starts -->
+        <!-- NOTE: replace image URLs with your own assets in production -->
+        <article class="poster-card poster-hover relative rounded overflow-hidden group" tabindex="0" data-category="action" data-title="Edge of Tomorrow">
+          <img loading="lazy" src="https://picsum.photos/seed/movie1/400/600" alt="Edge of Tomorrow poster" class="w-full h-[320px] object-cover transition-transform duration-300" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="p-3 bg-gradient-to-t from-black/60 text-left">
+            <h3 class="text-sm font-semibold">Edge of Tomorrow</h3>
+            <p class="text-xs text-gray-400 mt-1">Action • 2021</p>
+            <div class="mt-3 flex gap-2">
+              <button class="playBtn flex-1 text-sm py-1 rounded bg-white/90 text-black font-semibold">Play</button>
+              <button class="watchToggle text-sm py-1 px-2 rounded border border-slate-700">+ List</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="poster-card poster-hover relative rounded overflow-hidden group" tabindex="0" data-category="drama" data-title="Midnight Letters">
+          <img loading="lazy" src="https://picsum.photos/seed/movie2/400/600" alt="Midnight Letters poster" class="w-full h-[320px] object-cover transition-transform duration-300" />
+          <div class="p-3 bg-gradient-to-t from-black/60 text-left">
+            <h3 class="text-sm font-semibold">Midnight Letters</h3>
+            <p class="text-xs text-gray-400 mt-1">Drama • 2019</p>
+            <div class="mt-3 flex gap-2">
+              <button class="playBtn flex-1 text-sm py-1 rounded bg-white/90 text-black font-semibold">Play</button>
+              <button class="watchToggle text-sm py-1 px-2 rounded border border-slate-700">+ List</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="poster-card poster-hover relative rounded overflow-hidden group" tabindex="0" data-category="comedy" data-title="Laugh Riot">
+          <img loading="lazy" src="https://picsum.photos/seed/movie3/400/600" alt="Laugh Riot poster" class="w-full h-[320px] object-cover transition-transform duration-300" />
+          <div class="p-3 bg-gradient-to-t from-black/60 text-left">
+            <h3 class="text-sm font-semibold">Laugh Riot</h3>
+            <p class="text-xs text-gray-400 mt-1">Comedy • 2022</p>
+            <div class="mt-3 flex gap-2">
+              <button class="playBtn flex-1 text-sm py-1 rounded bg-white/90 text-black font-semibold">Play</button>
+              <button class="watchToggle text-sm py-1 px-2 rounded border border-slate-700">+ List</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="poster-card poster-hover relative rounded overflow-hidden group" tabindex="0" data-category="sci-fi" data-title="Beyond Stars">
+          <img loading="lazy" src="https://picsum.photos/seed/movie4/400/600" alt="Beyond Stars poster" class="w-full h-[320px] object-cover transition-transform duration-300" />
+          <div class="p-3 bg-gradient-to-t from-black/60 text-left">
+            <h3 class="text-sm font-semibold">Beyond Stars</h3>
+            <p class="text-xs text-gray-400 mt-1">Sci-Fi • 2020</p>
+            <div class="mt-3 flex gap-2">
+              <button class="playBtn flex-1 text-sm py-1 rounded bg-white/90 text-black font-semibold">Play</button>
+              <button class="watchToggle text-sm py-1 px-2 rounded border border-slate-700">+ List</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="poster-card poster-hover relative rounded overflow-hidden group" tabindex="0" data-category="kids" data-title="Bunny Tales">
+          <img loading="lazy" src="https://picsum.photos/seed/movie5/400/600" alt="Bunny Tales poster" class="w-full h-[320px] object-cover transition-transform duration-300" />
+          <div class="p-3 bg-gradient-to-t from-black/60 text-left">
+            <h3 class="text-sm font-semibold">Bunny Tales</h3>
+            <p class="text-xs text-gray-400 mt-1">Kids • 2023</p>
+            <div class="mt-3 flex gap-2">
+              <button class="playBtn flex-1 text-sm py-1 rounded bg-white/90 text-black font-semibold">Play</button>
+              <button class="watchToggle text-sm py-1 px-2 rounded border border-slate-700">+ List</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- duplicate items for demonstration -->
+        <article class="poster-card poster-hover relative rounded overflow-hidden group" tabindex="0" data-category="action" data-title="Rapid Response">
+          <img loading="lazy" src="https://picsum.photos/seed/movie6/400/600" alt="Rapid Response poster" class="w-full h-[320px] object-cover transition-transform duration-300" />
+          <div class="p-3 bg-gradient-to-t from-black/60 text-left">
+            <h3 class="text-sm font-semibold">Rapid Response</h3>
+            <p class="text-xs text-gray-400 mt-1">Action • 2018</p>
+            <div class="mt-3 flex gap-2">
+              <button class="playBtn flex-1 text-sm py-1 rounded bg-white/90 text-black font-semibold">Play</button>
+              <button class="watchToggle text-sm py-1 px-2 rounded border border-slate-700">+ List</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ... add more cards as needed ... -->
+      </div>
+    </section>
+
+    <!-- FAQ like the Netflix clone -->
+    <section class="max-w-[1200px] mx-auto px-4 pb-16">
+      <h2 class="text-2xl font-bold mb-4">Frequently Asked Questions</h2>
+      <div class="space-y-3">
+        <details class="bg-slate-900 p-4 rounded">
+          <summary class="cursor-pointer font-medium">What is PrimeStream?</summary>
+          <p class="mt-2 text-gray-300">PrimeStream is a demo front-end built to show a streaming UI inspired by popular OTT platforms. This is a static demo (no real streaming).</p>
+        </details>
+
+        <details class="bg-slate-900 p-4 rounded">
+          <summary class="cursor-pointer font-medium">How do I add to my list?</summary>
+          <p class="mt-2 text-gray-300">Click the "+ List" button on any card. The list is saved in your browser using localStorage for demo purposes.</p>
+        </details>
+
+        <details class="bg-slate-900 p-4 rounded">
+          <summary class="cursor-pointer font-medium">Can I play videos?</summary>
+          <p class="mt-2 text-gray-300">Click Play to open a demo modal. Replace the play handler with your streaming player or embed.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#071026] border-t border-gray-800 mt-12">
+    <div class="max-w-[1200px] mx-auto px-4 py-8 text-sm text-gray-400">
+      <div class="flex flex-col sm:flex-row justify-between gap-4">
+        <p>Questions? <a href="tel:+919499199678" class="underline">+91 9491919678</a></p>
+        <p>PrimeStream Demo — Not affiliated with Amazon</p>
+      </div>
+
+      <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-gray-400">
+        <a class="underline">FAQ</a>
+        <a class="underline">Help Center</a>
+        <a class="underline">Terms of Use</a>
+        <a class="underline">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Play Modal -->
+  <div id="playModal" class="fixed inset-0 hidden z-50 items-center justify-center bg-black/70 p-4">
+    <div class="bg-black rounded-lg max-w-3xl w-full overflow-hidden">
+      <div class="relative">
+        <button id="closePlay" class="absolute top-3 right-3 bg-white/10 px-3 py-1 rounded">Close</button>
+        <!-- demo: use an embed or <video> in production -->
+        <div class="aspect-video bg-black flex items-center justify-center">
+          <p class="text-gray-300">Demo Player (replace with your video player / embed)</p>
+        </div>
+      </div>
+      <div class="p-4">
+        <h3 id="modalTitle" class="text-lg font-semibold">Title</h3>
+        <p id="modalMeta" class="text-sm text-gray-400">Genre • Year</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign-in Modal -->
+  <div id="signInModal" class="fixed inset-0 hidden z-50 items-center justify-center bg-black/60 p-4">
+    <div class="bg-[#061025] rounded-md p-6 max-w-md w-full">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xl font-semibold">Sign in to PrimeStream</h3>
+        <button id="closeSign" class="text-gray-300">✕</button>
+      </div>
+
+      <form id="signForm" class="mt-4 space-y-3">
+        <label class="block">
+          <span class="text-sm text-gray-300">Email</span>
+          <input id="email" type="email" required class="w-full mt-1 px-3 py-2 rounded bg-slate-900/60 outline-none" placeholder="you@example.com" />
+        </label>
+
+        <label class="block">
+          <span class="text-sm text-gray-300">Password</span>
+          <input id="password" type="password" required minlength="6" class="w-full mt-1 px-3 py-2 rounded bg-slate-900/60 outline-none" placeholder="••••••" />
+        </label>
+
+        <div class="flex justify-end gap-2">
+          <button type="button" id="demoLogin" class="px-4 py-2 bg-slate-700 rounded">Demo</button>
+          <button type="submit" class="px-4 py-2 bg-sky-600 text-black rounded font-semibold">Sign in</button>
+        </div>
+
+        <p id="signMsg" class="text-sm text-yellow-300 hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Basic DOM hookups (no frameworks). Accessible + progressive enhancement ready.
+
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+
+    // Mobile/desktop nav category buttons
+    document.querySelectorAll('.nav-cat').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const cat = btn.dataset.cat || 'all';
+        applyCategory(cat);
+      });
+    });
+
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('bg-slate-800'));
+        btn.classList.add('bg-slate-800');
+        applyFilter(btn.dataset.filter);
+      });
+    });
+
+    // search
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    searchInput && searchInput.addEventListener('input', () => applySearch(searchInput.value));
+    clearSearch && clearSearch.addEventListener('click', () => { searchInput.value=''; applySearch(''); });
+
+    // sort (demo only)
+    document.getElementById('sort').addEventListener('change', (e) => {
+      // minimal demo: could reorder grid here
+      console.log('sort by', e.target.value);
+    });
+
+    // apply category / filter / search
+    function applyCategory(cat) { applyFilter(cat); window.scrollTo({top: 400, behavior:'smooth'}); }
+    function applyFilter(filter) {
+      const cards = Array.from(document.querySelectorAll('.poster-card'));
+      if (!filter || filter === 'all') {
+        cards.forEach(c => c.classList.remove('hidden'));
+        return;
+      }
+      cards.forEach(c => {
+        c.dataset.category && c.dataset.category.toLowerCase().includes(filter.toLowerCase()) ? c.classList.remove('hidden') : c.classList.add('hidden');
+      });
+    }
+    function applySearch(q) {
+      const qL = (q || '').trim().toLowerCase();
+      const cards = Array.from(document.querySelectorAll('.poster-card'));
+      if (!qL) return cards.forEach(c => c.classList.remove('hidden'));
+      cards.forEach(c => {
+        const title = (c.dataset.title || '').toLowerCase();
+        title.includes(qL) ? c.classList.remove('hidden') : c.classList.add('hidden');
+      });
+    }
+
+    // Play modal & card interactions
+    const playModal = document.getElementById('playModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMeta = document.getElementById('modalMeta');
+
+    document.querySelectorAll('.playBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const card = e.target.closest('.poster-card');
+        openPlayModal(card);
+      });
+    });
+
+    function openPlayModal(card) {
+      if (!card) return;
+      modalTitle.textContent = card.querySelector('h3')?.textContent || 'Title';
+      modalMeta.textContent = (card.querySelector('p')?.textContent || '');
+      playModal.classList.remove('hidden');
+      playModal.classList.add('flex');
+    }
+    document.getElementById('closePlay').onclick = () => { playModal.classList.add('hidden'); playModal.classList.remove('flex'); };
+
+    // Watchlist (simple localStorage demo)
+    const WATCH_KEY = 'primestream_watchlist_v1';
+    const watchCount = document.getElementById('watchCount');
+
+    function getWatchList() {
+      try { return JSON.parse(localStorage.getItem(WATCH_KEY)) || []; } catch { return []; }
+    }
+    function setWatchList(list) { localStorage.setItem(WATCH_KEY, JSON.stringify(list)); updateWatchIndicator(); }
+    function toggleWatch(title) {
+      const list = getWatchList();
+      const idx = list.indexOf(title);
+      if (idx === -1) { list.push(title); } else { list.splice(idx,1); }
+      setWatchList(list);
+    }
+    function updateWatchIndicator() {
+      const list = getWatchList();
+      watchCount.textContent = list.length;
+    }
+
+    // attach watchlist toggle handlers to existing buttons
+    document.querySelectorAll('.watchToggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const card = e.target.closest('.poster-card');
+        const title = card.dataset.title || card.querySelector('h3').textContent;
+        toggleWatch(title);
+        e.target.textContent = getWatchList().includes(title) ? '✓ Saved' : '+ List';
+      });
+    });
+
+    // Persist saved state when page loads
+    window.addEventListener('load', () => {
+      updateWatchIndicator();
+      const saved = getWatchList();
+      document.querySelectorAll('.poster-card').forEach(card => {
+        const t = card.dataset.title;
+        const btn = card.querySelector('.watchToggle');
+        if (t && saved.includes(t) && btn) btn.textContent = '✓ Saved';
+      });
+    });
+
+    // Sign in modal (demo validation)
+    const signInBtn = document.getElementById('signInBtn');
+    const signInModal = document.getElementById('signInModal');
+    const closeSign = document.getElementById('closeSign');
+    const signForm = document.getElementById('signForm');
+    const signMsg = document.getElementById('signMsg');
+
+    signInBtn.addEventListener('click', () => signInModal.classList.remove('hidden'));
+    closeSign.addEventListener('click', () => signInModal.classList.add('hidden'));
+    document.getElementById('demoLogin').addEventListener('click', () => {
+      // demo credentials (client-side only) — just to show a success message
+      signMsg.textContent = 'Demo signed in as demo@primestream.local';
+      signMsg.classList.remove('hidden');
+      setTimeout(()=>{ signMsg.classList.add('hidden'); signInModal.classList.add('hidden'); }, 1400);
+    });
+
+    signForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const pwd = document.getElementById('password').value;
+      if (!email || pwd.length < 6) {
+        signMsg.textContent = 'Please use a valid email and password (≥ 6 chars).';
+        signMsg.classList.remove('hidden');
+        return;
+      }
+      // Demo: treat any creds as success
+      signMsg.textContent = 'Signed in successfully (demo).';
+      signMsg.classList.remove('hidden');
+      setTimeout(()=>{ signMsg.classList.add('hidden'); signInModal.classList.add('hidden'); }, 900);
+    });
+
+    // watchlist button opens list modal or logs items
+    document.getElementById('watchlistBtn').addEventListener('click', () => {
+      const list = getWatchList();
+      alert(list.length ? 'Your list:\\n' + list.join('\\n') : 'Your list is empty.');
+    });
+
+    // keyboard: close modals on Esc
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        playModal.classList.add('hidden'); playModal.classList.remove('flex');
+        signInModal.classList.add('hidden');
+      }
+    });
+
+    // small accessibility improvement: focus outline for keyboard users
+    document.body.addEventListener('keyup', (e) => {
+      if (e.key === 'Tab') document.documentElement.classList.add('user-is-tabbing');
+    });
+
+  </script>
+</body>
+</html>
